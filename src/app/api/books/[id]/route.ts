@@ -1,12 +1,13 @@
+// src/app/api/books/[id]/route.ts
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params; // ✅ await because it's a Promise
 
     if (!id) {
       return NextResponse.json(
@@ -23,18 +24,15 @@ export async function DELETE(
       { message: "Book deleted successfully" },
       { status: 200 }
     );
-  } catch (error) {
-    console.error("DELETE /api/books/[id] error:", error);
+  } catch (error: unknown) {
+  console.error("DELETE /api/books/[id] error:", error);
 
-    const payload: Record<string, unknown> = {
-      error: "Failed to delete book",
-    };
+  const message =
+    error instanceof Error ? error.message : "Unexpected error occurred";
 
-    if (error instanceof Error) {
-      payload.message = error.message;
-      payload.stack = error.stack;
-    }
-
-    return NextResponse.json(payload, { status: 500 });
-  }
+  return NextResponse.json(
+    { error: "Failed to delete book", message },
+    { status: 500 }
+  );
+}
 }
