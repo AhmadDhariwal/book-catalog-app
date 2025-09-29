@@ -3,6 +3,14 @@ import { NextResponse } from "next/server";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// ✅ Define book body type
+interface BookBody {
+  title: string;
+  author: string;
+  genre: string;
+  userEmail?: string;
+}
+
 export async function GET() {
   try {
     const books = await prisma.book.findMany({
@@ -10,12 +18,12 @@ export async function GET() {
       include: { user: true }, // 👈 include user info
     });
     return NextResponse.json(books, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("GET /api/books error:", error);
-    const payload: any = { error: "Failed to fetch books" };
-    if (isDev) {
-      payload.message = error?.message ?? String(error);
-      payload.stack = error?.stack ?? undefined;
+    const payload: Record<string, unknown> = { error: "Failed to fetch books" };
+    if (isDev && error instanceof Error) {
+      payload.message = error.message;
+      payload.stack = error.stack;
     }
     return NextResponse.json(payload, { status: 500 });
   }
@@ -23,8 +31,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { title, author, genre, userEmail } = body ?? {};
+    const body: BookBody = await req.json();
+    const { title, author, genre, userEmail } = body;
 
     if (!title || !author || !genre) {
       return NextResponse.json(
@@ -49,12 +57,12 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newBook, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("POST /api/books error:", error);
-    const payload: any = { error: "Failed to create book" };
-    if (isDev) {
-      payload.message = error?.message ?? String(error);
-      payload.stack = error?.stack ?? undefined;
+    const payload: Record<string, unknown> = { error: "Failed to create book" };
+    if (isDev && error instanceof Error) {
+      payload.message = error.message;
+      payload.stack = error.stack;
     }
     return NextResponse.json(payload, { status: 500 });
   }

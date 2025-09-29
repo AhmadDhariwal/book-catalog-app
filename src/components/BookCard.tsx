@@ -2,13 +2,15 @@
 
 import { mutate } from "swr";
 
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  genre: string;
+}
+
 interface BookCardProps {
-  book: {
-    id: string;
-    title: string;
-    author: string;
-    genre: string;
-  };
+  book: Book;
 }
 
 export default function BookCard({ book }: BookCardProps) {
@@ -22,11 +24,10 @@ export default function BookCard({ book }: BookCardProps) {
         throw new Error(err.message || "Failed to delete book");
       }
 
-      // Revalidate SWR cache for the book list
       mutate("/api/books");
     } catch (error) {
-      console.error("Delete error:", error);
-      alert("Could not delete book. Check console for details.");
+      console.error("❌ Delete error:", error);
+      alert("Could not delete book. Please try again.");
     }
   }
 
@@ -41,16 +42,15 @@ export default function BookCard({ book }: BookCardProps) {
         />
       </div>
 
-      {/* Book info */}
       <div className="p-5">
         <h2 className="text-xl font-bold text-indigo-700 mb-2">{book.title}</h2>
         <p className="text-gray-800 font-medium mb-1">✍️ {book.author}</p>
         <p className="text-sm text-gray-600 italic">📖 {book.genre}</p>
 
-        {/* Delete button */}
+
         <button
           onClick={handleDelete}
-          className="mt-4 w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold py-2 rounded-xl shadow-md transition"
+          className="mt-4 w-full bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white font-semibold py-2 rounded-xl shadow-md transition"
         >
           🗑️ Delete
         </button>
